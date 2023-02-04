@@ -2,7 +2,7 @@ package entity
 
 import "time"
 
-type Entity struct {
+type Vessel struct {
 	ID              string     `db:"id"`
 	VesselID        string     `db:"vessel_id"`
 	Source          string     `db:"source"`

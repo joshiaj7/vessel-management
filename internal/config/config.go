@@ -2,11 +2,16 @@ package config
 
 import (
 	"fmt"
-	"time"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql" // blank import for initializing mysql driver
+	"github.com/kelseyhightower/envconfig"
+	"github.com/subosito/gotenv"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
-	sqlxtr "go.bukalapak.io/buka20/core-service/go/sentry/tracing/sqlx"
+	"github.com/joshiaj7/vessel-management/internal/util"
+	coreConfig "github.com/joshiaj7/vessel-management/module/core/config"
 )
 
 type ServiceConfig struct {
@@ -17,22 +22,16 @@ type ServiceConfig struct {
 	DatabaseConfig DatabaseConfig `envconfig:"DB"`
 	// KafkaConfig    KafkaConfig    `envconfig:"KAFKA"`
 
-	Database *sqlxtr.DB `ignored:"true"`
+	Database *gorm.DB `ignored:"true"`
 }
 
 type DatabaseConfig struct {
-	Driver      string `required:"true" envconfig:"DRIVER"`
 	Host        string `required:"true" envconfig:"HOST"`
 	Port        int    `required:"true" envconfig:"PORT"`
 	Username    string `required:"true" envconfig:"USERNAME"`
 	Password    string `required:"true" envconfig:"PASSWORD"`
 	Database    string `required:"true" envconfig:"DATABASE"`
 	QueryString string `required:"true" envconfig:"QUERYSTRING"`
-
-	MaxOpenConns    int           `required:"true" envconfig:"MAXOPENCONNS"`
-	MaxIdleConns    int           `required:"true" envconfig:"MAXIDLECONNS"`
-	ConnMaxLifetime time.Duration `required:"true" envconfig:"MAXLIFETIME"`
-	ConnMaxIdletime time.Duration `required:"true" envconfig:"MAXIDLETIME"`
 }
 
 func (c *DatabaseConfig) RWDataSourceName() string {
@@ -47,52 +46,44 @@ func (c *DatabaseConfig) RWDataSourceName() string {
 	)
 }
 
-// type CacheConfig struct {
-// 	Host     string `envconfig:"HOST"`
-// 	Password string `envconfig:"PASSWORD"`
-// }
+func NewDB(dbCfg DatabaseConfig) (*gorm.DB, error) {
+	return gorm.Open(mysql.Open(dbCfg.RWDataSourceName()), &gorm.Config{})
+}
 
-// type KafkaConfig struct {
-// 	ClientID string   `envconfig:"CLIENT_ID"`
-// 	Brokers  []string `envconfig:"BROKERS"`
-// }
+func loadGatewayConfig() (GatewayConfig, error) {
+	var cfg GatewayConfig
 
-// // loadConfig loads the config for service. It can be called from any application
-// // instantiation (e.g. consumer or rpc server).
-// func loadConfig() (ServiceConfig, error) {
-// 	var cfg ServiceConfig
+	// load from .env if exists
+	if _, err := os.Stat(".env"); err == nil {
+		if err := gotenv.Load(); err != nil {
+			return cfg, util.TracerFromError(err)
+		}
+	}
 
-// 	// load from .env if exists
-// 	if _, err := os.Stat(".env"); err == nil {
-// 		if err := gotenv.Load(); err != nil {
-// 			return cfg, liberr.TracerFromError(err)
-// 		}
-// 	}
+	// parse environment variable to config struct using "service" namespace
+	// to prevent conflict with another modules
+	err := envconfig.Process("service", &cfg)
+	if err != nil {
+		return cfg, util.TracerFromError(err)
+	}
+	return cfg, nil
+}
 
-// 	// parse cenvironment variable to config struct using "service" namespace
-// 	// to prevent conflict with another modules
-// 	err := envconfig.Process("service", &cfg)
-// 	if err != nil {
-// 		return cfg, liberr.TracerFromError(err)
-// 	}
-// 	return cfg, nil
-// }
+func loadCoreConfig() (coreConfig.CoreConfig, error) {
+	var cfg coreConfig.CoreConfig
 
-// func loadGatewayConfig() (GatewayConfig, error) {
-// 	var cfg GatewayConfig
+	// load from .env if exists
+	if _, err := os.Stat(".env"); err == nil {
+		if err := gotenv.Load(); err != nil {
+			return cfg, util.TracerFromError(err)
+		}
+	}
 
-// 	// load from .env if exists
-// 	if _, err := os.Stat(".env"); err == nil {
-// 		if err := gotenv.Load(); err != nil {
-// 			return cfg, liberr.TracerFromError(err)
-// 		}
-// 	}
-
-// 	// parse environment variable to config struct using "service" namespace
-// 	// to prevent conflict with another modules
-// 	err := envconfig.Process("service", &cfg)
-// 	if err != nil {
-// 		return cfg, liberr.TracerFromError(err)
-// 	}
-// 	return cfg, nil
-// }
+	// parse environment variable to config struct using "service" namespace
+	// to prevent conflict with another modules
+	err := envconfig.Process("core", &cfg)
+	if err != nil {
+		return cfg, util.TracerFromError(err)
+	}
+	return cfg, nil
+}

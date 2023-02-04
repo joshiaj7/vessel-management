@@ -7,7 +7,6 @@ CREATE TABLE shipments (
     `state` TINYINT,
     `docked_at` DATETIME,
     `departed_at` DATETIME,
-    `transited_at` DATETIME,
     `arrived_at` DATETIME,
     `created_at` DATETIME,
     `updated_at` DATETIME
