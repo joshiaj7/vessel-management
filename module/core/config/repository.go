@@ -5,12 +5,12 @@ import (
 )
 
 type CoreRepository struct {
-	Shipment repository.ShipmentRepository
-	Vessel   repository.VesselRepository
+	Voyage repository.VoyageRepository
+	Vessel repository.VesselRepository
 }
 
 func RegisterCoreRepository(cfg *GatewayConfig) *CoreRepository {
-	shipmentRepository := repository.NewShipmentRepository(
+	voyageRepository := repository.NewVoyageRepository(
 		cfg.Config.CoreDatabaseName,
 		cfg.Database,
 	)
@@ -21,7 +21,7 @@ func RegisterCoreRepository(cfg *GatewayConfig) *CoreRepository {
 	)
 
 	return &CoreRepository{
-		Shipment: shipmentRepository,
-		Vessel:   vesselRepository,
+		Voyage: voyageRepository,
+		Vessel: vesselRepository,
 	}
 }

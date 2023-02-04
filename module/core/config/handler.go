@@ -10,8 +10,8 @@ import (
 
 func RegisterCoreHandler(usecase *CoreUsecase) {
 
-	shipmentHandler := handler.NewShipmentHandler(
-		usecase.Shipment,
+	voyageHandler := handler.NewVoyageHandler(
+		usecase.Voyage,
 	)
 
 	vesselHandler := handler.NewVesselHandler(
@@ -19,7 +19,7 @@ func RegisterCoreHandler(usecase *CoreUsecase) {
 	)
 
 	router := httprouter.New()
-	shipmentHandler.Register(router)
+	voyageHandler.Register(router)
 	vesselHandler.Register(router)
 
 	router.HandlerFunc("GET", "/healthz", healthz)

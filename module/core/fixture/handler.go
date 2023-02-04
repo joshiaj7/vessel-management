@@ -25,3 +25,22 @@ func NewVesselHandler(
 
 	return svc, mocks
 }
+
+type MockVoyageHandler struct {
+	// Usecase
+	VoyageUsecase *mock_usecase.MockVoyageUsecase
+}
+
+func NewVoyageHandler(
+	ctrl *gomock.Controller,
+) (*handler.VoyageHandler, *MockVoyageHandler) {
+	mocks := &MockVoyageHandler{
+		VoyageUsecase: mock_usecase.NewMockVoyageUsecase(ctrl),
+	}
+
+	svc := handler.NewVoyageHandler(
+		mocks.VoyageUsecase,
+	)
+
+	return svc, mocks
+}

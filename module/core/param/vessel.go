@@ -12,10 +12,10 @@ type UpdateVessel struct {
 }
 
 type ListVessels struct {
-	IDs    []string
-	Name   string
-	Limit  int
-	Offset int
+	Name    string
+	OwnerID string
+	Limit   int
+	Offset  int
 }
 
 type GetVessel struct {

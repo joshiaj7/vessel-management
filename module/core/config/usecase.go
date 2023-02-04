@@ -5,13 +5,13 @@ import (
 )
 
 type CoreUsecase struct {
-	Shipment usecase.ShipmentUsecase
-	Vessel   usecase.VesselUsecase
+	Voyage usecase.VoyageUsecase
+	Vessel usecase.VesselUsecase
 }
 
 func RegisterCoreUsecase(repository *CoreRepository) *CoreUsecase {
-	shipmentUsecase := usecase.NewShipmentUsecase(
-		repository.Shipment,
+	voyageUsecase := usecase.NewVoyageUsecase(
+		repository.Voyage,
 		repository.Vessel,
 	)
 
@@ -20,7 +20,7 @@ func RegisterCoreUsecase(repository *CoreRepository) *CoreUsecase {
 	)
 
 	return &CoreUsecase{
-		Shipment: shipmentUsecase,
-		Vessel:   vesselUsecase,
+		Voyage: voyageUsecase,
+		Vessel: vesselUsecase,
 	}
 }

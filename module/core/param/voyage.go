@@ -1,23 +1,23 @@
 package param
 
-type CreateShipment struct {
+type CreateVoyage struct {
 	VesselID        string
 	Source          string
 	Destination     string
 	CurrentLocation string
 }
 
-type UpdateShipment struct {
+type UpdateVoyage struct {
+	ID              string
 	CurrentLocation string
 	State           string
 }
 
-type ListShipments struct {
-	IDs    []string
-	Limit  string
-	Offset string
+type ListVoyages struct {
+	Limit  int
+	Offset int
 }
 
-type GetShipment struct {
+type GetVoyage struct {
 	ID string
 }
