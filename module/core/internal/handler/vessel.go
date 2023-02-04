@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -52,24 +51,19 @@ func (h *VesselHandler) CreateVessel(w http.ResponseWriter, r *http.Request, par
 func (h *VesselHandler) ListVessels(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 	if err != nil {
-		fmt.Println("LIMIT")
-		fmt.Println(limit, err)
 		limit = util.DefaultLimit
 	}
 
 	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
 	if err != nil {
-		fmt.Println("OFFSET")
-		fmt.Println(offset, err)
 		offset = util.DefaultOffset
 	}
 
-	fmt.Println(limit, offset)
-
 	result, pagination, err := h.usecase.ListVessels(r.Context(), &param.ListVessels{
-		Name:   r.URL.Query().Get("name"),
-		Limit:  limit,
-		Offset: offset,
+		Name:    r.URL.Query().Get("name"),
+		OwnerID: r.URL.Query().Get("owner_id"),
+		Limit:   limit,
+		Offset:  offset,
 	})
 	if err != nil {
 		BuildErrorResponse(w, err)

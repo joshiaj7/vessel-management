@@ -55,7 +55,7 @@ func TestVesselHandler_CreateVessel(t *testing.T) {
 				params: httprouter.Params{},
 			},
 			response: Response{
-				body: map[string]interface{}{"data": "{\"ID\":\"123\",\"Name\":\"Some Name\",\"NACCSCode\":\"ABC123\",\"CreatedAt\":\"0001-01-01T00:00:00Z\",\"UpdatedAt\":\"0001-01-01T00:00:00Z\"}", "status_code": 201},
+				body: map[string]interface{}{"data": "{\"ID\":\"123\",\"OwnerID\":\"\",\"Name\":\"Some Name\",\"NACCSCode\":\"ABC123\",\"CreatedAt\":\"0001-01-01T00:00:00Z\",\"UpdatedAt\":\"0001-01-01T00:00:00Z\"}", "status_code": 201},
 				err:  nil,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, req Request) {
@@ -108,12 +108,14 @@ func TestVesselHandler_ListVessels(t *testing.T) {
 	}
 
 	name := "Some Name"
+	ownerID := "123"
 	limit := "5"
 	offset := "1"
 
 	req, _ := http.NewRequest(http.MethodPost, "http://example.com/", nil)
 	q := req.URL.Query()
 	q.Add("name", name)
+	q.Add("owner_id", ownerID)
 	q.Add("limit", limit)
 	q.Add("offset", offset)
 	req.URL.RawQuery = q.Encode()
@@ -121,12 +123,14 @@ func TestVesselHandler_ListVessels(t *testing.T) {
 	brokenReq, _ := http.NewRequest(http.MethodPost, "http://example.com/", nil)
 	query := brokenReq.URL.Query()
 	query.Add("name", name)
+	query.Add("owner_id", ownerID)
 	query.Add("limit", "asd")
 	query.Add("offset", "qwe")
 	brokenReq.URL.RawQuery = query.Encode()
 
 	vessel := &entity.Vessel{
-		ID:        "123",
+		ID: "1",
+
 		Name:      name,
 		NACCSCode: "ABC123",
 	}
@@ -142,11 +146,11 @@ func TestVesselHandler_ListVessels(t *testing.T) {
 				params: httprouter.Params{},
 			},
 			response: Response{
-				body: map[string]interface{}{"data": "[{\"ID\":\"123\",\"Name\":\"Some Name\",\"NACCSCode\":\"ABC123\",\"CreatedAt\":\"0001-01-01T00:00:00Z\",\"UpdatedAt\":\"0001-01-01T00:00:00Z\"}]", "meta": "{\"limit\":5,\"offset\":1,\"total\":1}", "status_code": 200},
+				body: map[string]interface{}{"data": "[{\"ID\":\"1\",\"OwnerID\":\"\",\"Name\":\"Some Name\",\"NACCSCode\":\"ABC123\",\"CreatedAt\":\"0001-01-01T00:00:00Z\",\"UpdatedAt\":\"0001-01-01T00:00:00Z\"}]", "meta": "{\"limit\":5,\"offset\":1,\"total\":1}", "status_code": 200},
 				err:  nil,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, r Request) {
-				m.VesselUsecase.EXPECT().ListVessels(r.req.Context(), &param.ListVessels{Name: name, Limit: 5, Offset: 1}).
+				m.VesselUsecase.EXPECT().ListVessels(r.req.Context(), &param.ListVessels{Name: name, Limit: 5, Offset: 1, OwnerID: ownerID}).
 					Return([]*entity.Vessel{vessel}, util.NewOffsetPagination(5, 1, 1), nil)
 			},
 		},
@@ -160,7 +164,7 @@ func TestVesselHandler_ListVessels(t *testing.T) {
 				err:  testutil.ErrorUnexpected,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, r Request) {
-				m.VesselUsecase.EXPECT().ListVessels(r.req.Context(), &param.ListVessels{Name: name, Limit: 10, Offset: 0}).
+				m.VesselUsecase.EXPECT().ListVessels(r.req.Context(), &param.ListVessels{Name: name, Limit: 10, Offset: 0, OwnerID: ownerID}).
 					Return(nil, nil, testutil.ErrorUnexpected)
 			},
 		},
@@ -221,7 +225,7 @@ func TestVesselHandler_GetVessel(t *testing.T) {
 				params: httprouter.Params{},
 			},
 			response: Response{
-				body: map[string]interface{}{"data": "{\"ID\":\"123\",\"Name\":\"Some Name\",\"NACCSCode\":\"ABC123\",\"CreatedAt\":\"0001-01-01T00:00:00Z\",\"UpdatedAt\":\"0001-01-01T00:00:00Z\"}", "status_code": 200},
+				body: map[string]interface{}{"data": "{\"ID\":\"123\",\"OwnerID\":\"\",\"Name\":\"Some Name\",\"NACCSCode\":\"ABC123\",\"CreatedAt\":\"0001-01-01T00:00:00Z\",\"UpdatedAt\":\"0001-01-01T00:00:00Z\"}", "status_code": 200},
 				err:  nil,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, req Request) {
@@ -301,7 +305,7 @@ func TestVesselHandler_UpdateVessel(t *testing.T) {
 				params: httprouter.Params{},
 			},
 			response: Response{
-				body: map[string]interface{}{"data": "{\"ID\":\"123\",\"Name\":\"Some Name\",\"NACCSCode\":\"ABC123\",\"CreatedAt\":\"0001-01-01T00:00:00Z\",\"UpdatedAt\":\"0001-01-01T00:00:00Z\"}", "status_code": 200},
+				body: map[string]interface{}{"data": "{\"ID\":\"123\",\"OwnerID\":\"\",\"Name\":\"Some Name\",\"NACCSCode\":\"ABC123\",\"CreatedAt\":\"0001-01-01T00:00:00Z\",\"UpdatedAt\":\"0001-01-01T00:00:00Z\"}", "status_code": 200},
 				err:  nil,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, req Request) {
