@@ -38,6 +38,7 @@ func (h *VesselHandler) Register(router *httprouter.Router) {
 func (h *VesselHandler) CreateVessel(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	result, err := h.usecase.CreateVessel(r.Context(), &param.CreateVessel{
 		Name:      r.URL.Query().Get("name"),
+		OwnerID:   r.URL.Query().Get("owner_id"),
 		NACCSCode: r.URL.Query().Get("naccs_code"),
 	})
 	if err != nil {
@@ -90,6 +91,7 @@ func (h *VesselHandler) UpdateVessel(w http.ResponseWriter, r *http.Request, par
 	result, err := h.usecase.UpdateVessel(r.Context(), &param.UpdateVessel{
 		ID:        r.URL.Query().Get("id"),
 		Name:      r.URL.Query().Get("name"),
+		OwnerID:   r.URL.Query().Get("owner_id"),
 		NACCSCode: r.URL.Query().Get("naccs_code"),
 	})
 	if err != nil {

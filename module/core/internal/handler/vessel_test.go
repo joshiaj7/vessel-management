@@ -30,11 +30,13 @@ func TestVesselHandler_CreateVessel(t *testing.T) {
 	}
 
 	name := "Some Name"
+	ownerID := "234"
 	naccsCode := "ABC123"
 
 	req, _ := http.NewRequest(http.MethodPost, "http://example.com/", nil)
 	q := req.URL.Query()
 	q.Add("name", name)
+	q.Add("owner_id", ownerID)
 	q.Add("naccs_code", naccsCode)
 	req.URL.RawQuery = q.Encode()
 
@@ -59,7 +61,7 @@ func TestVesselHandler_CreateVessel(t *testing.T) {
 				err:  nil,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, req Request) {
-				m.VesselUsecase.EXPECT().CreateVessel(req.req.Context(), &param.CreateVessel{Name: name, NACCSCode: naccsCode}).
+				m.VesselUsecase.EXPECT().CreateVessel(req.req.Context(), &param.CreateVessel{Name: name, NACCSCode: naccsCode, OwnerID: ownerID}).
 					Return(vessel, nil)
 			},
 		},
@@ -73,7 +75,7 @@ func TestVesselHandler_CreateVessel(t *testing.T) {
 				err:  testutil.ErrorUnexpected,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, req Request) {
-				m.VesselUsecase.EXPECT().CreateVessel(req.req.Context(), &param.CreateVessel{Name: name, NACCSCode: naccsCode}).
+				m.VesselUsecase.EXPECT().CreateVessel(req.req.Context(), &param.CreateVessel{Name: name, NACCSCode: naccsCode, OwnerID: ownerID}).
 					Return(nil, testutil.ErrorUnexpected)
 			},
 		},
@@ -278,6 +280,7 @@ func TestVesselHandler_UpdateVessel(t *testing.T) {
 	}
 
 	id := "123"
+	ownerID := "234"
 	name := "Some Name"
 	naccsCode := "ABC123"
 
@@ -285,6 +288,7 @@ func TestVesselHandler_UpdateVessel(t *testing.T) {
 	q := req.URL.Query()
 	q.Add("id", id)
 	q.Add("name", name)
+	q.Add("owner_id", ownerID)
 	q.Add("naccs_code", naccsCode)
 	req.URL.RawQuery = q.Encode()
 
@@ -309,7 +313,7 @@ func TestVesselHandler_UpdateVessel(t *testing.T) {
 				err:  nil,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, req Request) {
-				m.VesselUsecase.EXPECT().UpdateVessel(req.req.Context(), &param.UpdateVessel{ID: id, Name: name, NACCSCode: naccsCode}).
+				m.VesselUsecase.EXPECT().UpdateVessel(req.req.Context(), &param.UpdateVessel{ID: id, Name: name, NACCSCode: naccsCode, OwnerID: ownerID}).
 					Return(vessel, nil)
 			},
 		},
@@ -323,7 +327,7 @@ func TestVesselHandler_UpdateVessel(t *testing.T) {
 				err:  entity.ErrorVesselNotFound,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, req Request) {
-				m.VesselUsecase.EXPECT().UpdateVessel(req.req.Context(), &param.UpdateVessel{ID: id, Name: name, NACCSCode: naccsCode}).
+				m.VesselUsecase.EXPECT().UpdateVessel(req.req.Context(), &param.UpdateVessel{ID: id, Name: name, NACCSCode: naccsCode, OwnerID: ownerID}).
 					Return(nil, entity.ErrorVesselNotFound)
 			},
 		},

@@ -2,11 +2,13 @@ package param
 
 type CreateVessel struct {
 	Name      string
+	OwnerID   string
 	NACCSCode string
 }
 
 type UpdateVessel struct {
 	ID        string
+	OwnerID   string
 	Name      string
 	NACCSCode string
 }
