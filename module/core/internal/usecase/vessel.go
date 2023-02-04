@@ -1,5 +1,7 @@
 package usecase
 
+//go:generate mockgen -source vessel.go -destination mock/vessel.go
+
 import (
 	"context"
 
@@ -13,7 +15,7 @@ type VesselUsecase interface {
 	CreateVessel(ctx context.Context, params *param.CreateVessel) (*entity.Vessel, error)
 	ListVessels(ctx context.Context, params *param.ListVessels) ([]*entity.Vessel, *util.OffsetPagination, error)
 	GetVessel(ctx context.Context, params *param.GetVessel) (*entity.Vessel, error)
-	UpdateVessel(ctx context.Context, eObj *entity.Vessel) (*entity.Vessel, error)
+	UpdateVessel(ctx context.Context, params *param.UpdateVessel) (*entity.Vessel, error)
 }
 
 type vesselUsecaseRepository struct {

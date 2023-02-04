@@ -69,7 +69,7 @@ func registerGatewayCore(cfg GatewayConfig) {
 		log.Fatalf("Register Gateway Core Failed: %v", err)
 	}
 
-	coreConfig.RegisterCoreHandler(&coreConfig.GatewayConfig{
+	coreConfig.RegisterCoreGateway(&coreConfig.GatewayConfig{
 		Config:   coreCfg,
 		Database: cfg.Database,
 	})

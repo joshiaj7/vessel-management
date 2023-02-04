@@ -14,8 +14,8 @@ type UpdateVessel struct {
 type ListVessels struct {
 	IDs    []string
 	Name   string
-	Limit  string
-	Offset string
+	Limit  int
+	Offset int
 }
 
 type GetVessel struct {
