@@ -13,10 +13,11 @@ import (
 )
 
 type VesselRepository interface {
+	LockVessel(ctx context.Context, eObj *entity.Vessel) error
 	ListVessels(ctx context.Context, params *param.ListVessels) ([]*entity.Vessel, *util.OffsetPagination, error)
 	GetVessel(ctx context.Context, params *param.GetVessel) (*entity.Vessel, error)
 	CreateVessel(ctx context.Context, params *param.CreateVessel) (*entity.Vessel, error)
-	UpdateVessel(ctx context.Context, eObj *entity.Vessel) (*entity.Vessel, error)
+	UpdateVessel(ctx context.Context, eObj *entity.Vessel, params *param.UpdateVessel) error
 }
 
 type vesselRepository struct {
@@ -31,6 +32,10 @@ func NewVesselRepository(databaseName string, database *gorm.DB) *vesselReposito
 	}
 }
 
+func (r *vesselRepository) LockVessel(ctx context.Context, eObj *entity.Vessel) error {
+	return nil
+}
+
 func (r *vesselRepository) CreateVessel(ctx context.Context, params *param.CreateVessel) (result *entity.Vessel, err error) {
 	return result, nil
 }
@@ -43,6 +48,6 @@ func (r *vesselRepository) GetVessel(ctx context.Context, params *param.GetVesse
 	return result, nil
 }
 
-func (r *vesselRepository) UpdateVessel(ctx context.Context, eObj *entity.Vessel) (result *entity.Vessel, err error) {
-	return result, nil
+func (r *vesselRepository) UpdateVessel(ctx context.Context, eObj *entity.Vessel, params *param.UpdateVessel) (err error) {
+	return nil
 }

@@ -16,3 +16,20 @@ type Voyage struct {
 	CreatedAt            time.Time  `db:"created_at"`
 	UpdatedAt            time.Time  `db:"updated_at"`
 }
+
+func (v *Voyage) ToMap() map[string]interface{} {
+	return map[string]interface{}{
+		"ID":                   v.ID,
+		"VesselID":             v.VesselID,
+		"Source":               v.Source,
+		"Destination":          v.Destination,
+		"CurrentLocation":      v.CurrentLocation,
+		"State":                v.State,
+		"EstimatedArrivalTime": v.EstimatedArrivalTime,
+		"DockedAt":             v.DockedAt,
+		"DepartedAt":           v.DepartedAt,
+		"ArrivedAt":            v.ArrivedAt,
+		"CreatedAt":            v.CreatedAt,
+		"UpdatedAt":            v.UpdatedAt,
+	}
+}

@@ -64,15 +64,16 @@ func (u *vesselUsecase) GetVessel(ctx context.Context, params *param.GetVessel) 
 }
 
 func (u *vesselUsecase) UpdateVessel(ctx context.Context, params *param.UpdateVessel) (result *entity.Vessel, err error) {
-	vessel, err := u.repository.vessel.GetVessel(ctx, &param.GetVessel{ID: params.ID})
+	vessel := &entity.Vessel{ID: params.ID}
+	err = u.repository.vessel.LockVessel(ctx, vessel)
 	if err != nil {
 		return nil, util.ErrorWrap(err)
 	}
 
-	result, err = u.repository.vessel.UpdateVessel(ctx, vessel)
+	err = u.repository.vessel.UpdateVessel(ctx, vessel, params)
 	if err != nil {
 		return nil, util.ErrorWrap(err)
 	}
 
-	return result, nil
+	return vessel, nil
 }

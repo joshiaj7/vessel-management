@@ -10,7 +10,7 @@ var (
 	ErrorVoyageNotFound = NewError("Voyage is not found", http.StatusNotFound)
 
 	ErrorVesselNotFound   = NewError("Vessel is not found", http.StatusNotFound)
-	ErrorVesselDuplicated = NewError("Voyage has duplication", http.StatusBadRequest)
+	ErrorVesselDuplicated = NewError("Vessel has duplication", http.StatusBadRequest)
 )
 
 type RequestError struct {
