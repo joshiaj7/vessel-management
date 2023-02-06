@@ -13,4 +13,4 @@ CREATE TABLE voyages (
     `updated_at` DATETIME
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE INDEX index_vessel_id ON voyages (vessel_id, type);
+CREATE INDEX index_vessel_id ON voyages (vessel_id);

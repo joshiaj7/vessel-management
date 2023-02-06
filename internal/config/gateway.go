@@ -52,11 +52,13 @@ func initGatewayConfig() (cfg GatewayConfig, err error) {
 	cfg, err = loadGatewayConfig()
 	if err != nil {
 		log.Fatalf("Load Gateway Config Failed: %v", err)
+		return cfg, err
 	}
 
 	db, err := NewDB(cfg.DatabaseConfig)
 	if err != nil {
 		log.Fatalf("Create new DB Failed: %v", err)
+		return cfg, err
 	}
 	cfg.Database = db
 

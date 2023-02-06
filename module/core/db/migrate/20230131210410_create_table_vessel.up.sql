@@ -7,4 +7,4 @@ CREATE TABLE vessels (
     `updated_at` DATETIME
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE INDEX index_owner_id ON vessels (owner_id, type);
+CREATE INDEX index_owner_id ON vessels (owner_id);
