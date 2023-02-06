@@ -26,13 +26,13 @@ func initGatewayConfig() (cfg GatewayConfig, err error) {
 	cfg, err = loadGatewayConfig()
 	if err != nil {
 		log.Fatalf("Load Gateway Config Failed: %v", err)
-		return cfg, err
+		return cfg, util.ErrorWrap(err)
 	}
 
 	db, err := NewDB(cfg.DatabaseConfig)
 	if err != nil {
 		log.Fatalf("Create new DB Failed: %v", err)
-		return cfg, err
+		return cfg, util.ErrorWrap(err)
 	}
 	cfg.Database = db
 
@@ -43,6 +43,7 @@ func registerGatewayCore(cfg GatewayConfig) (router *httprouter.Router, err erro
 	coreCfg, err := loadCoreConfig()
 	if err != nil {
 		log.Fatalf("Load Core Config Failed: %v", err)
+		return nil, util.ErrorWrap(err)
 	}
 
 	router = coreConfig.RegisterCoreGateway(&coreConfig.GatewayConfig{
