@@ -39,6 +39,7 @@ func NewVoyageUsecase(
 	}
 }
 
+// TODO: WIP
 func (u *voyageUsecase) CreateVoyage(ctx context.Context, params *param.CreateVoyage) (result *entity.Voyage, err error) {
 	result, err = u.repository.voyage.CreateVoyage(ctx, params)
 	if err != nil {

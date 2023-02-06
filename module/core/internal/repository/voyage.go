@@ -49,6 +49,7 @@ var (
 	}
 )
 
+// TODO: WIP
 func (r *voyageRepository) CreateVoyage(ctx context.Context, params *param.CreateVoyage) (result *entity.Voyage, err error) {
 	return result, nil
 }

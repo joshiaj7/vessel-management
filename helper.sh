@@ -1,8 +1,3 @@
-build-docker() {
-    docker build -t vessel-management -f ./build/server/Dockerfile .
-    docker run --rm -p 8080:8080/tcp --env-file .env --network host vessel-management:latest
-}
-
 migrate-up() {
     user=root
     password=root
