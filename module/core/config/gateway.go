@@ -8,11 +8,12 @@ import (
 type GatewayConfig struct {
 	Config   CoreConfig
 	Database *gorm.DB
+	Router   *httprouter.Router
 }
 
-func RegisterCoreGateway(cfg *GatewayConfig) *httprouter.Router {
+func RegisterCoreGateway(cfg *GatewayConfig) {
 
 	repositories := RegisterCoreRepository(cfg)
 	usecases := RegisterCoreUsecase(repositories)
-	return RegisterCoreHandler(usecases)
+	RegisterCoreHandler(cfg.Router, usecases)
 }

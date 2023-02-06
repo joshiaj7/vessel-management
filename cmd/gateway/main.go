@@ -9,12 +9,12 @@ import (
 )
 
 func main() {
-	router, err := config.NewGatewayServer()
+	cfg, err := config.NewGatewayServer()
 	if err != nil {
 		log.Fatalf("Load Gateway Server Failed: %v", err)
 		return
 	}
 
 	fmt.Println("Listening to port 8080")
-	http.ListenAndServe(":8080", router)
+	http.ListenAndServe(":8080", cfg.Router)
 }

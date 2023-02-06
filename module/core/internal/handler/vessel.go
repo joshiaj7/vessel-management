@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/joshiaj7/vessel-management/internal/util"
+	"github.com/joshiaj7/vessel-management/module/core/entity"
 	"github.com/joshiaj7/vessel-management/module/core/internal/usecase"
 	"github.com/joshiaj7/vessel-management/module/core/param"
 )
@@ -36,11 +39,10 @@ func (h *VesselHandler) Register(router *httprouter.Router) {
 }
 
 func (h *VesselHandler) CreateVessel(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	result, err := h.usecase.CreateVessel(r.Context(), &param.CreateVessel{
-		Name:      r.URL.Query().Get("name"),
-		OwnerID:   r.URL.Query().Get("owner_id"),
-		NACCSCode: r.URL.Query().Get("naccs_code"),
-	})
+	par := &param.CreateVessel{}
+	json.NewDecoder(r.Body).Decode(&par)
+
+	result, err := h.usecase.CreateVessel(r.Context(), par)
 	if err != nil {
 		BuildErrorResponse(w, err)
 		return
@@ -50,19 +52,38 @@ func (h *VesselHandler) CreateVessel(w http.ResponseWriter, r *http.Request, par
 }
 
 func (h *VesselHandler) ListVessels(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
-	if err != nil {
-		limit = util.DefaultLimit
+	var ownerID int
+	limit := util.DefaultLimit
+	offset := util.DefaultOffset
+	var err error
+
+	if r.URL.Query().Get("owner_id") != "" {
+		ownerID, err = strconv.Atoi(r.URL.Query().Get("owner_id"))
+		if err != nil {
+			BuildErrorResponse(w, entity.ErrorParamType)
+			return
+		}
 	}
 
-	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
-	if err != nil {
-		offset = util.DefaultOffset
+	if r.URL.Query().Get("limit") != "" {
+		limit, err = strconv.Atoi(r.URL.Query().Get("limit"))
+		if err != nil {
+			BuildErrorResponse(w, entity.ErrorParamType)
+			return
+		}
+	}
+
+	if r.URL.Query().Get("offset") != "" {
+		offset, err = strconv.Atoi(r.URL.Query().Get("offset"))
+		if err != nil {
+			BuildErrorResponse(w, entity.ErrorParamType)
+			return
+		}
 	}
 
 	result, pagination, err := h.usecase.ListVessels(r.Context(), &param.ListVessels{
 		Name:    r.URL.Query().Get("name"),
-		OwnerID: r.URL.Query().Get("owner_id"),
+		OwnerID: ownerID,
 		Limit:   limit,
 		Offset:  offset,
 	})
@@ -75,9 +96,17 @@ func (h *VesselHandler) ListVessels(w http.ResponseWriter, r *http.Request, para
 }
 
 func (h *VesselHandler) GetVessel(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	var id int
+	var err error
+
+	id, err = strconv.Atoi(params.ByName("id"))
+	if err != nil {
+		BuildErrorResponse(w, entity.ErrorParamType)
+		return
+	}
+
 	result, err := h.usecase.GetVessel(r.Context(), &param.GetVessel{
-		ID:        r.URL.Query().Get("id"),
-		NACCSCode: r.URL.Query().Get("naccs_code"),
+		ID: id,
 	})
 	if err != nil {
 		BuildErrorResponse(w, err)
@@ -88,12 +117,25 @@ func (h *VesselHandler) GetVessel(w http.ResponseWriter, r *http.Request, params
 }
 
 func (h *VesselHandler) UpdateVessel(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	result, err := h.usecase.UpdateVessel(r.Context(), &param.UpdateVessel{
-		ID:        r.URL.Query().Get("id"),
-		Name:      r.URL.Query().Get("name"),
-		OwnerID:   r.URL.Query().Get("owner_id"),
-		NACCSCode: r.URL.Query().Get("naccs_code"),
-	})
+	var id int
+	var err error
+
+	if params.ByName("id") != "" {
+		id, err = strconv.Atoi(params.ByName("id"))
+		if err != nil {
+			BuildErrorResponse(w, entity.ErrorParamType)
+			return
+		}
+	}
+
+	fmt.Println("id")
+	fmt.Println(id)
+
+	par := &param.UpdateVessel{}
+	json.NewDecoder(r.Body).Decode(&par)
+
+	par.ID = id
+	result, err := h.usecase.UpdateVessel(r.Context(), par)
 	if err != nil {
 		BuildErrorResponse(w, err)
 		return

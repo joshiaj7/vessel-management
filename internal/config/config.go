@@ -5,6 +5,7 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql" // blank import for initializing mysql driver
+	"github.com/julienschmidt/httprouter"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/subosito/gotenv"
 	"gorm.io/driver/mysql"
@@ -21,7 +22,8 @@ type ServiceConfig struct {
 
 	DatabaseConfig DatabaseConfig `envconfig:"DB"`
 
-	Database *gorm.DB `ignored:"true"`
+	Database *gorm.DB           `ignored:"true"`
+	Router   *httprouter.Router `ignored:"true"`
 }
 
 type DatabaseConfig struct {

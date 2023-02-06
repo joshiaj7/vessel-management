@@ -9,9 +9,9 @@ import (
 )
 
 type SuccessResponse struct {
-	Data       string `json:"data"`
-	Meta       string `json:"meta,omitempty"`
-	StatusCode int    `json:"status_code"`
+	Data       interface{}            `json:"data"`
+	Meta       *util.OffsetPagination `json:"meta,omitempty"`
+	StatusCode int                    `json:"status_code"`
 }
 
 func BuildErrorResponse(w http.ResponseWriter, err error) {
@@ -25,16 +25,10 @@ func BuildErrorResponse(w http.ResponseWriter, err error) {
 }
 
 func BuildSuccessResponse(w http.ResponseWriter, r interface{}, m *util.OffsetPagination, c int) {
-	data, _ := json.Marshal(r)
-
 	resp := &SuccessResponse{
-		Data:       string(data),
+		Data:       r,
+		Meta:       m,
 		StatusCode: c,
-	}
-
-	if m != nil {
-		meta, _ := json.Marshal(m)
-		resp.Meta = string(meta)
 	}
 
 	WriteHTTPResponse(w, resp, c)

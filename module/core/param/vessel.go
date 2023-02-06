@@ -1,26 +1,25 @@
 package param
 
 type CreateVessel struct {
-	Name      string
-	OwnerID   string
-	NACCSCode string
+	Name      string `json:"name"`
+	OwnerID   int    `json:"owner_id"`
+	NACCSCode string `json:"naccs_code"`
 }
 
 type UpdateVessel struct {
-	ID        string
-	OwnerID   string
-	Name      string
-	NACCSCode string
+	ID        int    `json:"id"`
+	OwnerID   int    `json:"owner_id"`
+	Name      string `json:"name"`
+	NACCSCode string `json:"naccs_code"`
 }
 
 type ListVessels struct {
 	Name    string
-	OwnerID string
+	OwnerID int
 	Limit   int
 	Offset  int
 }
 
 type GetVessel struct {
-	ID        string
-	NACCSCode string
+	ID int `required:"true"`
 }

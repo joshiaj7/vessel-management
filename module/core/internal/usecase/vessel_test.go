@@ -25,8 +25,8 @@ func TestVesselUsecase_CreateVessel(t *testing.T) {
 	}
 
 	vessel := &entity.Vessel{
-		ID:        "1",
-		OwnerID:   "123",
+		ID:        1,
+		OwnerID:   123,
 		Name:      "Some Name",
 		NACCSCode: "The code",
 	}
@@ -41,12 +41,12 @@ func TestVesselUsecase_CreateVessel(t *testing.T) {
 				ctx: context.Background(),
 				params: &param.CreateVessel{
 					Name:      "Some Name",
-					OwnerID:   "123",
+					OwnerID:   123,
 					NACCSCode: "The code",
 				},
 			},
 			response: Response{
-				result: map[string]interface{}{"ID": "1"},
+				result: map[string]interface{}{"ID": 1},
 				err:    nil,
 			},
 			mockFn: func(m *fixture.MockVesselUsecase, req Request) {
@@ -59,7 +59,7 @@ func TestVesselUsecase_CreateVessel(t *testing.T) {
 				ctx: context.Background(),
 				params: &param.CreateVessel{
 					Name:      "Some Name",
-					OwnerID:   "123",
+					OwnerID:   123,
 					NACCSCode: "The code",
 				},
 			},
@@ -100,8 +100,8 @@ func TestVesselUsecase_ListVessels(t *testing.T) {
 	}
 
 	vessel := &entity.Vessel{
-		ID:        "1",
-		OwnerID:   "123",
+		ID:        1,
+		OwnerID:   123,
 		Name:      "Some Name",
 		NACCSCode: "The code",
 	}
@@ -116,7 +116,7 @@ func TestVesselUsecase_ListVessels(t *testing.T) {
 				ctx: context.Background(),
 				params: &param.ListVessels{
 					Name:    "Some Name",
-					OwnerID: "123",
+					OwnerID: 123,
 					Offset:  0,
 					Limit:   10,
 				},
@@ -135,7 +135,7 @@ func TestVesselUsecase_ListVessels(t *testing.T) {
 				ctx: context.Background(),
 				params: &param.ListVessels{
 					Name:    "Some Name",
-					OwnerID: "123",
+					OwnerID: 123,
 					Offset:  0,
 					Limit:   10,
 				},
@@ -179,8 +179,8 @@ func TestVesselUsecase_GetVessel(t *testing.T) {
 	}
 
 	vessel := &entity.Vessel{
-		ID:        "1",
-		OwnerID:   "123",
+		ID:        1,
+		OwnerID:   123,
 		Name:      "Some Name",
 		NACCSCode: "The code",
 	}
@@ -194,12 +194,11 @@ func TestVesselUsecase_GetVessel(t *testing.T) {
 			request: Request{
 				ctx: context.Background(),
 				params: &param.GetVessel{
-					ID:        "1",
-					NACCSCode: "The code",
+					ID: 1,
 				},
 			},
 			response: Response{
-				result: map[string]interface{}{"ID": "1"},
+				result: map[string]interface{}{"ID": 1},
 				err:    nil,
 			},
 			mockFn: func(m *fixture.MockVesselUsecase, req Request) {
@@ -211,8 +210,7 @@ func TestVesselUsecase_GetVessel(t *testing.T) {
 			request: Request{
 				ctx: context.Background(),
 				params: &param.GetVessel{
-					ID:        "1",
-					NACCSCode: "The code",
+					ID: 1,
 				},
 			},
 			response: Response{
@@ -252,8 +250,8 @@ func TestVesselUsecase_UpdateVessel(t *testing.T) {
 	}
 
 	vessel := &entity.Vessel{
-		ID:        "1",
-		OwnerID:   "234",
+		ID:        1,
+		OwnerID:   234,
 		Name:      "The Name",
 		NACCSCode: "The Code",
 	}
@@ -267,18 +265,18 @@ func TestVesselUsecase_UpdateVessel(t *testing.T) {
 			request: Request{
 				ctx: context.Background(),
 				params: &param.UpdateVessel{
-					ID:        "1",
-					OwnerID:   "234",
+					ID:        1,
+					OwnerID:   234,
 					Name:      "The Name",
 					NACCSCode: "The Code",
 				},
 			},
 			response: Response{
-				result: map[string]interface{}{"ID": "1"},
+				result: map[string]interface{}{"ID": 1},
 				err:    nil,
 			},
 			mockFn: func(m *fixture.MockVesselUsecase, req Request) {
-				m.VesselRepository.EXPECT().LockVessel(req.ctx, &entity.Vessel{ID: "1"}).
+				m.VesselRepository.EXPECT().LockVessel(req.ctx, &entity.Vessel{ID: 1}).
 					Return(nil).
 					Do(func(ctx context.Context, eObj *entity.Vessel) {
 						*eObj = *vessel
@@ -291,8 +289,8 @@ func TestVesselUsecase_UpdateVessel(t *testing.T) {
 			request: Request{
 				ctx: context.Background(),
 				params: &param.UpdateVessel{
-					ID:        "1",
-					OwnerID:   "234",
+					ID:        1,
+					OwnerID:   234,
 					Name:      "The Name",
 					NACCSCode: "The Code",
 				},
@@ -302,7 +300,7 @@ func TestVesselUsecase_UpdateVessel(t *testing.T) {
 				err:    testutil.ErrorUnexpected,
 			},
 			mockFn: func(m *fixture.MockVesselUsecase, req Request) {
-				m.VesselRepository.EXPECT().LockVessel(req.ctx, &entity.Vessel{ID: "1"}).
+				m.VesselRepository.EXPECT().LockVessel(req.ctx, &entity.Vessel{ID: 1}).
 					Return(testutil.ErrorUnexpected)
 			},
 		},
@@ -310,8 +308,8 @@ func TestVesselUsecase_UpdateVessel(t *testing.T) {
 			request: Request{
 				ctx: context.Background(),
 				params: &param.UpdateVessel{
-					ID:        "1",
-					OwnerID:   "234",
+					ID:        1,
+					OwnerID:   234,
 					Name:      "The Name",
 					NACCSCode: "The Code",
 				},
@@ -321,7 +319,7 @@ func TestVesselUsecase_UpdateVessel(t *testing.T) {
 				err:    testutil.ErrorUnexpected,
 			},
 			mockFn: func(m *fixture.MockVesselUsecase, req Request) {
-				m.VesselRepository.EXPECT().LockVessel(req.ctx, &entity.Vessel{ID: "1"}).
+				m.VesselRepository.EXPECT().LockVessel(req.ctx, &entity.Vessel{ID: 1}).
 					Return(nil).
 					Do(func(ctx context.Context, eObj *entity.Vessel) {
 						*eObj = *vessel

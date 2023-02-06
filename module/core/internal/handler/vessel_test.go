@@ -1,7 +1,9 @@
 package handler_test
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -30,18 +32,18 @@ func TestVesselHandler_CreateVessel(t *testing.T) {
 	}
 
 	name := "Some Name"
-	ownerID := "234"
+	ownerID := 234
 	naccsCode := "ABC123"
 
-	req, _ := http.NewRequest(http.MethodPost, "http://example.com/", nil)
-	q := req.URL.Query()
-	q.Add("name", name)
-	q.Add("owner_id", ownerID)
-	q.Add("naccs_code", naccsCode)
-	req.URL.RawQuery = q.Encode()
+	par := param.CreateVessel{
+		Name:      name,
+		OwnerID:   ownerID,
+		NACCSCode: naccsCode,
+	}
+	body, _ := json.Marshal(par)
 
 	vessel := &entity.Vessel{
-		ID:        "123",
+		ID:        123,
 		Name:      name,
 		NACCSCode: naccsCode,
 	}
@@ -52,12 +54,8 @@ func TestVesselHandler_CreateVessel(t *testing.T) {
 		mockFn   func(*fixture.MockVesselHandler, Request)
 	}{
 		"success": {
-			request: Request{
-				req:    req,
-				params: httprouter.Params{},
-			},
 			response: Response{
-				body: map[string]interface{}{"data": "{\"ID\":\"123\",\"OwnerID\":\"\",\"Name\":\"Some Name\",\"NACCSCode\":\"ABC123\",\"CreatedAt\":\"0001-01-01T00:00:00Z\",\"UpdatedAt\":\"0001-01-01T00:00:00Z\"}", "status_code": 201},
+				body: map[string]interface{}{"data": vessel, "status_code": 201},
 				err:  nil,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, req Request) {
@@ -66,10 +64,6 @@ func TestVesselHandler_CreateVessel(t *testing.T) {
 			},
 		},
 		"CreateVessel error": {
-			request: Request{
-				req:    req,
-				params: httprouter.Params{},
-			},
 			response: Response{
 				body: map[string]interface{}{"message": "status 500: err Unexpected error"},
 				err:  testutil.ErrorUnexpected,
@@ -87,10 +81,14 @@ func TestVesselHandler_CreateVessel(t *testing.T) {
 			defer ctrl.Finish()
 
 			handler, mocks := fixture.NewVesselHandler(ctrl)
-			tc.mockFn(mocks, tc.request)
+			req, _ := http.NewRequest(http.MethodPost, "http://example.com/", bytes.NewReader(body))
+			tc.mockFn(mocks, Request{
+				req:    req,
+				params: httprouter.Params{},
+			})
 
 			responseWriter := httptest.NewRecorder()
-			handler.CreateVessel(responseWriter, tc.request.req, tc.request.params)
+			handler.CreateVessel(responseWriter, req, nil)
 			resultBody, _ := io.ReadAll(responseWriter.Body)
 			body, _ := json.Marshal(tc.response.body)
 			assert.Equal(t, string(body)+"\n", string(resultBody))
@@ -100,8 +98,9 @@ func TestVesselHandler_CreateVessel(t *testing.T) {
 
 func TestVesselHandler_ListVessels(t *testing.T) {
 	type Request struct {
-		req    *http.Request
-		params httprouter.Params
+		req         *http.Request
+		params      httprouter.Params
+		queryParams map[string]interface{}
 	}
 
 	type Response struct {
@@ -110,29 +109,13 @@ func TestVesselHandler_ListVessels(t *testing.T) {
 	}
 
 	name := "Some Name"
-	ownerID := "123"
+	ownerID := 123
 	limit := "5"
 	offset := "1"
 
-	req, _ := http.NewRequest(http.MethodPost, "http://example.com/", nil)
-	q := req.URL.Query()
-	q.Add("name", name)
-	q.Add("owner_id", ownerID)
-	q.Add("limit", limit)
-	q.Add("offset", offset)
-	req.URL.RawQuery = q.Encode()
-
-	brokenReq, _ := http.NewRequest(http.MethodPost, "http://example.com/", nil)
-	query := brokenReq.URL.Query()
-	query.Add("name", name)
-	query.Add("owner_id", ownerID)
-	query.Add("limit", "asd")
-	query.Add("offset", "qwe")
-	brokenReq.URL.RawQuery = query.Encode()
-
 	vessel := &entity.Vessel{
-		ID: "1",
-
+		ID:        1,
+		OwnerID:   ownerID,
 		Name:      name,
 		NACCSCode: "ABC123",
 	}
@@ -144,11 +127,15 @@ func TestVesselHandler_ListVessels(t *testing.T) {
 	}{
 		"success": {
 			request: Request{
-				req:    req,
-				params: httprouter.Params{},
+				queryParams: map[string]interface{}{
+					"name":     name,
+					"owner_id": ownerID,
+					"limit":    limit,
+					"offset":   offset,
+				},
 			},
 			response: Response{
-				body: map[string]interface{}{"data": "[{\"ID\":\"1\",\"OwnerID\":\"\",\"Name\":\"Some Name\",\"NACCSCode\":\"ABC123\",\"CreatedAt\":\"0001-01-01T00:00:00Z\",\"UpdatedAt\":\"0001-01-01T00:00:00Z\"}]", "meta": "{\"limit\":5,\"offset\":1,\"total\":1}", "status_code": 200},
+				body: map[string]interface{}{"data": []*entity.Vessel{vessel}, "meta": util.NewOffsetPagination(5, 1, 1), "status_code": 200},
 				err:  nil,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, r Request) {
@@ -156,32 +143,82 @@ func TestVesselHandler_ListVessels(t *testing.T) {
 					Return([]*entity.Vessel{vessel}, util.NewOffsetPagination(5, 1, 1), nil)
 			},
 		},
+		"error param owner_id": {
+			request: Request{
+				queryParams: map[string]interface{}{
+					"owner_id": "asd",
+				},
+			},
+			response: Response{
+				body: map[string]interface{}{"message": "status 422: err Wrong param type"},
+				err:  nil,
+			},
+			mockFn: func(m *fixture.MockVesselHandler, r Request) {},
+		},
+		"error param limit": {
+			request: Request{
+				queryParams: map[string]interface{}{
+					"limit": "asd",
+				},
+			},
+			response: Response{
+				body: map[string]interface{}{"message": "status 422: err Wrong param type"},
+				err:  nil,
+			},
+			mockFn: func(m *fixture.MockVesselHandler, r Request) {},
+		},
+		"error param offset": {
+			request: Request{
+				queryParams: map[string]interface{}{
+					"offset": "asd",
+				},
+			},
+			response: Response{
+				body: map[string]interface{}{"message": "status 422: err Wrong param type"},
+				err:  nil,
+			},
+			mockFn: func(m *fixture.MockVesselHandler, r Request) {},
+		},
 		"ListVessels error": {
 			request: Request{
-				req:    brokenReq,
-				params: httprouter.Params{},
+				queryParams: map[string]interface{}{
+					"name":     name,
+					"owner_id": ownerID,
+					"limit":    limit,
+					"offset":   offset,
+				},
 			},
 			response: Response{
 				body: map[string]interface{}{"message": "status 500: err Unexpected error"},
 				err:  testutil.ErrorUnexpected,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, r Request) {
-				m.VesselUsecase.EXPECT().ListVessels(r.req.Context(), &param.ListVessels{Name: name, Limit: 10, Offset: 0, OwnerID: ownerID}).
+				m.VesselUsecase.EXPECT().ListVessels(r.req.Context(), &param.ListVessels{Name: name, Limit: 5, Offset: 1, OwnerID: ownerID}).
 					Return(nil, nil, testutil.ErrorUnexpected)
 			},
 		},
 	}
-
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
+			req, _ := http.NewRequest(http.MethodGet, "http://example.com/", nil)
+			q := req.URL.Query()
+			for k, v := range tc.request.queryParams {
+				q.Add(k, fmt.Sprintf("%v", v))
+			}
+			req.URL.RawQuery = q.Encode()
+
 			handler, mocks := fixture.NewVesselHandler(ctrl)
-			tc.mockFn(mocks, tc.request)
+			tc.mockFn(mocks, Request{
+				req:         req,
+				params:      nil,
+				queryParams: tc.request.queryParams,
+			})
 
 			responseWriter := httptest.NewRecorder()
-			handler.ListVessels(responseWriter, tc.request.req, tc.request.params)
+			handler.ListVessels(responseWriter, req, nil)
 			resultBody, _ := io.ReadAll(responseWriter.Body)
 			body, _ := json.Marshal(tc.response.body)
 			assert.Equal(t, string(body)+"\n", string(resultBody))
@@ -191,8 +228,9 @@ func TestVesselHandler_ListVessels(t *testing.T) {
 
 func TestVesselHandler_GetVessel(t *testing.T) {
 	type Request struct {
-		req    *http.Request
-		params httprouter.Params
+		req         *http.Request
+		params      httprouter.Params
+		queryParams map[string]interface{}
 	}
 
 	type Response struct {
@@ -200,15 +238,9 @@ func TestVesselHandler_GetVessel(t *testing.T) {
 		err  error
 	}
 
-	id := "123"
+	id := 123
 	name := "Some Name"
 	naccsCode := "ABC123"
-
-	req, _ := http.NewRequest(http.MethodGet, "http://example.com/", nil)
-	q := req.URL.Query()
-	q.Add("id", id)
-	q.Add("naccs_code", naccsCode)
-	req.URL.RawQuery = q.Encode()
 
 	vessel := &entity.Vessel{
 		ID:        id,
@@ -223,29 +255,46 @@ func TestVesselHandler_GetVessel(t *testing.T) {
 	}{
 		"success": {
 			request: Request{
-				req:    req,
-				params: httprouter.Params{},
+				params: httprouter.Params{httprouter.Param{
+					Key:   "id",
+					Value: "123",
+				}},
 			},
 			response: Response{
-				body: map[string]interface{}{"data": "{\"ID\":\"123\",\"OwnerID\":\"\",\"Name\":\"Some Name\",\"NACCSCode\":\"ABC123\",\"CreatedAt\":\"0001-01-01T00:00:00Z\",\"UpdatedAt\":\"0001-01-01T00:00:00Z\"}", "status_code": 200},
+				body: map[string]interface{}{"data": vessel, "status_code": 200},
 				err:  nil,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, req Request) {
-				m.VesselUsecase.EXPECT().GetVessel(req.req.Context(), &param.GetVessel{ID: id, NACCSCode: naccsCode}).
+				m.VesselUsecase.EXPECT().GetVessel(req.req.Context(), &param.GetVessel{ID: id}).
 					Return(vessel, nil)
 			},
 		},
-		"GetVessel error": {
+		"error param id": {
 			request: Request{
-				req:    req,
-				params: httprouter.Params{},
+				params: httprouter.Params{httprouter.Param{
+					Key:   "id",
+					Value: "asd",
+				}},
+			},
+			response: Response{
+				body: map[string]interface{}{"message": "status 422: err Wrong param type"},
+				err:  nil,
+			},
+			mockFn: func(m *fixture.MockVesselHandler, req Request) {},
+		},
+		"error GetVessel": {
+			request: Request{
+				params: httprouter.Params{httprouter.Param{
+					Key:   "id",
+					Value: "123",
+				}},
 			},
 			response: Response{
 				body: map[string]interface{}{"message": "status 404: err Vessel is not found"},
 				err:  entity.ErrorVesselNotFound,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, req Request) {
-				m.VesselUsecase.EXPECT().GetVessel(req.req.Context(), &param.GetVessel{ID: id, NACCSCode: naccsCode}).
+				m.VesselUsecase.EXPECT().GetVessel(req.req.Context(), &param.GetVessel{ID: id}).
 					Return(nil, entity.ErrorVesselNotFound)
 			},
 		},
@@ -256,11 +305,15 @@ func TestVesselHandler_GetVessel(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
+			req, _ := http.NewRequest(http.MethodGet, "http://example.com/", nil)
 			handler, mocks := fixture.NewVesselHandler(ctrl)
-			tc.mockFn(mocks, tc.request)
-
+			tc.mockFn(mocks, Request{
+				req:         req,
+				params:      nil,
+				queryParams: tc.request.queryParams,
+			})
 			responseWriter := httptest.NewRecorder()
-			handler.GetVessel(responseWriter, tc.request.req, tc.request.params)
+			handler.GetVessel(responseWriter, req, tc.request.params)
 			resultBody, _ := io.ReadAll(responseWriter.Body)
 			body, _ := json.Marshal(tc.response.body)
 			assert.Equal(t, string(body)+"\n", string(resultBody))
@@ -279,22 +332,22 @@ func TestVesselHandler_UpdateVessel(t *testing.T) {
 		err  error
 	}
 
-	id := "123"
-	ownerID := "234"
+	id := 123
+	ownerID := 234
 	name := "Some Name"
 	naccsCode := "ABC123"
 
-	req, _ := http.NewRequest(http.MethodPut, "http://example.com/", nil)
-	q := req.URL.Query()
-	q.Add("id", id)
-	q.Add("name", name)
-	q.Add("owner_id", ownerID)
-	q.Add("naccs_code", naccsCode)
-	req.URL.RawQuery = q.Encode()
+	par := param.UpdateVessel{
+		Name:      name,
+		OwnerID:   ownerID,
+		NACCSCode: naccsCode,
+	}
+	body, _ := json.Marshal(par)
 
 	vessel := &entity.Vessel{
 		ID:        id,
 		Name:      name,
+		OwnerID:   ownerID,
 		NACCSCode: naccsCode,
 	}
 
@@ -305,11 +358,13 @@ func TestVesselHandler_UpdateVessel(t *testing.T) {
 	}{
 		"success": {
 			request: Request{
-				req:    req,
-				params: httprouter.Params{},
+				params: httprouter.Params{httprouter.Param{
+					Key:   "id",
+					Value: "123",
+				}},
 			},
 			response: Response{
-				body: map[string]interface{}{"data": "{\"ID\":\"123\",\"OwnerID\":\"\",\"Name\":\"Some Name\",\"NACCSCode\":\"ABC123\",\"CreatedAt\":\"0001-01-01T00:00:00Z\",\"UpdatedAt\":\"0001-01-01T00:00:00Z\"}", "status_code": 200},
+				body: map[string]interface{}{"data": vessel, "status_code": 200},
 				err:  nil,
 			},
 			mockFn: func(m *fixture.MockVesselHandler, req Request) {
@@ -317,10 +372,25 @@ func TestVesselHandler_UpdateVessel(t *testing.T) {
 					Return(vessel, nil)
 			},
 		},
+		"error param id": {
+			request: Request{
+				params: httprouter.Params{httprouter.Param{
+					Key:   "id",
+					Value: "asd",
+				}},
+			},
+			response: Response{
+				body: map[string]interface{}{"message": "status 422: err Wrong param type"},
+				err:  nil,
+			},
+			mockFn: func(m *fixture.MockVesselHandler, req Request) {},
+		},
 		"UpdateVessel error": {
 			request: Request{
-				req:    req,
-				params: httprouter.Params{},
+				params: httprouter.Params{httprouter.Param{
+					Key:   "id",
+					Value: "123",
+				}},
 			},
 			response: Response{
 				body: map[string]interface{}{"message": "status 404: err Vessel is not found"},
@@ -339,10 +409,14 @@ func TestVesselHandler_UpdateVessel(t *testing.T) {
 			defer ctrl.Finish()
 
 			handler, mocks := fixture.NewVesselHandler(ctrl)
-			tc.mockFn(mocks, tc.request)
+			req, _ := http.NewRequest(http.MethodPost, "http://example.com/", bytes.NewReader(body))
+			tc.mockFn(mocks, Request{
+				req:    req,
+				params: httprouter.Params{},
+			})
 
 			responseWriter := httptest.NewRecorder()
-			handler.UpdateVessel(responseWriter, tc.request.req, tc.request.params)
+			handler.UpdateVessel(responseWriter, req, tc.request.params)
 			resultBody, _ := io.ReadAll(responseWriter.Body)
 			body, _ := json.Marshal(tc.response.body)
 			assert.Equal(t, string(body)+"\n", string(resultBody))

@@ -13,13 +13,14 @@ type GatewayConfig struct {
 	ServiceConfig
 }
 
-func NewGatewayServer() (router *httprouter.Router, err error) {
-	cfg, err := initGatewayConfig()
+func NewGatewayServer() (cfg GatewayConfig, err error) {
+	cfg, err = initGatewayConfig()
 	if err != nil {
-		return nil, util.ErrorWrap(err)
+		return cfg, util.ErrorWrap(err)
 	}
 
-	return registerGatewayCore(cfg)
+	registerGatewayCore(cfg)
+	return cfg, util.ErrorWrap(err)
 }
 
 func initGatewayConfig() (cfg GatewayConfig, err error) {
@@ -36,19 +37,23 @@ func initGatewayConfig() (cfg GatewayConfig, err error) {
 	}
 	cfg.Database = db
 
+	router := httprouter.New()
+	cfg.Router = router
+
 	return cfg, nil
 }
 
-func registerGatewayCore(cfg GatewayConfig) (router *httprouter.Router, err error) {
+func registerGatewayCore(cfg GatewayConfig) (err error) {
 	coreCfg, err := loadCoreConfig()
 	if err != nil {
 		log.Fatalf("Load Core Config Failed: %v", err)
-		return nil, util.ErrorWrap(err)
+		return util.ErrorWrap(err)
 	}
 
-	router = coreConfig.RegisterCoreGateway(&coreConfig.GatewayConfig{
+	coreConfig.RegisterCoreGateway(&coreConfig.GatewayConfig{
 		Config:   coreCfg,
 		Database: cfg.Database,
+		Router:   cfg.Router,
 	})
-	return router, nil
+	return nil
 }

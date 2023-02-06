@@ -17,7 +17,7 @@ import (
 
 func TestVesselRepository_LockVessel(t *testing.T) {
 	rowColumns := []string{"id", "owner_id", "name", "naccs_code", "created_at", "updated_at"}
-	rowValues := []driver.Value{"123", "456", "Some Name", "Some Code", testutil.CreatedAt, testutil.UpdatedAt}
+	rowValues := []driver.Value{123, 456, "Some Name", "Some Code", testutil.CreatedAt, testutil.UpdatedAt}
 	query := "SELECT `id`,`owner_id`,`name`,`naccs_code`,`created_at`,`updated_at` FROM `vessels` WHERE id = ? FOR UPDATE"
 
 	type Request struct {
@@ -95,19 +95,19 @@ func TestVesselRepository_CreateVessel(t *testing.T) {
 			request: Request{
 				ctx: context.Background(),
 				params: &param.CreateVessel{
-					OwnerID:   "456",
+					OwnerID:   456,
 					Name:      "Some Name",
 					NACCSCode: "Some Code",
 				},
 			},
 			response: Response{
-				result: map[string]interface{}{"ID": "1"},
+				result: map[string]interface{}{"ID": 1},
 				err:    nil,
 			},
 			mockFn: func(m *fixture.MockVesselRepository, req Request, res Response) {
 				m.SQLMock.ExpectBegin()
 				m.SQLMock.ExpectExec(regexp.QuoteMeta(query)).
-					WithArgs("456", "Some Name", "Some Code", testutil.AnyTime{}, testutil.AnyTime{}).
+					WithArgs(456, "Some Name", "Some Code", testutil.AnyTime{}, testutil.AnyTime{}).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 				m.SQLMock.ExpectCommit()
 			},
@@ -116,7 +116,7 @@ func TestVesselRepository_CreateVessel(t *testing.T) {
 			request: Request{
 				ctx: context.Background(),
 				params: &param.CreateVessel{
-					OwnerID:   "456",
+					OwnerID:   456,
 					Name:      "Some Name",
 					NACCSCode: "Some Code",
 				},
@@ -128,7 +128,7 @@ func TestVesselRepository_CreateVessel(t *testing.T) {
 			mockFn: func(m *fixture.MockVesselRepository, req Request, res Response) {
 				m.SQLMock.ExpectBegin()
 				m.SQLMock.ExpectExec(regexp.QuoteMeta(query)).
-					WithArgs("456", "Some Name", "Some Code", testutil.AnyTime{}, testutil.AnyTime{}).
+					WithArgs(456, "Some Name", "Some Code", testutil.AnyTime{}, testutil.AnyTime{}).
 					WillReturnResult(sqlmock.NewResult(1, 1)).
 					WillReturnError(testutil.ErrDB)
 				m.SQLMock.ExpectRollback()
@@ -150,8 +150,9 @@ func TestVesselRepository_CreateVessel(t *testing.T) {
 
 func TestVesselRepository_ListVessels(t *testing.T) {
 	rowColumns := []string{"id", "owner_id", "name", "naccs_code", "created_at", "updated_at"}
-	rowValues := []driver.Value{"123", "456", "Some Name", "Some Code", testutil.CreatedAt, testutil.UpdatedAt}
-	query := "SELECT `id`,`owner_id`,`name`,`naccs_code`,`created_at`,`updated_at` FROM `vessels`"
+	rowValues := []driver.Value{123, 456, "Some Name", "Some Code", testutil.CreatedAt, testutil.UpdatedAt}
+	query1 := "SELECT `id`,`owner_id`,`name`,`naccs_code`,`created_at`,`updated_at` FROM `vessels`"
+	query2 := "SELECT count(*) FROM `vessels`"
 
 	type Request struct {
 		ctx    context.Context
@@ -174,7 +175,7 @@ func TestVesselRepository_ListVessels(t *testing.T) {
 				ctx: context.Background(),
 				params: &param.ListVessels{
 					Name:    "name",
-					OwnerID: "123",
+					OwnerID: 123,
 					Limit:   10,
 					Offset:  0,
 				},
@@ -182,8 +183,8 @@ func TestVesselRepository_ListVessels(t *testing.T) {
 			response: Response{
 				result: []*entity.Vessel{
 					{
-						ID:        "123",
-						OwnerID:   "456",
+						ID:        123,
+						OwnerID:   456,
 						Name:      "Some Name",
 						NACCSCode: "Some Code",
 						CreatedAt: testutil.CreatedAt,
@@ -194,18 +195,23 @@ func TestVesselRepository_ListVessels(t *testing.T) {
 				err:        nil,
 			},
 			mockFn: func(m *fixture.MockVesselRepository, req Request, res Response) {
-				additionalQuery := "WHERE name LIKE ? AND owner_id = ? LIMIT 10"
-				rows := m.SQLMock.NewRows(rowColumns)
-				rows.AddRow(rowValues...)
-				m.SQLMock.ExpectQuery(regexp.QuoteMeta(query + " " + additionalQuery)).WillReturnRows(rows)
+				additionalQuery1 := "WHERE name LIKE ? AND owner_id = ? LIMIT 10"
+				rows1 := m.SQLMock.NewRows(rowColumns)
+				rows1.AddRow(rowValues...)
+				m.SQLMock.ExpectQuery(regexp.QuoteMeta(query1 + " " + additionalQuery1)).WillReturnRows(rows1)
+
+				additionalQuery2 := "WHERE name LIKE ? AND owner_id = ?"
+				rows2 := m.SQLMock.NewRows([]string{"count"})
+				rows2.AddRow(1)
+				m.SQLMock.ExpectQuery(regexp.QuoteMeta(query2 + " " + additionalQuery2)).WillReturnRows(rows2)
 			},
 		},
-		"db error": {
+		"db error first": {
 			request: Request{
 				ctx: context.Background(),
 				params: &param.ListVessels{
 					Name:    "name",
-					OwnerID: "123",
+					OwnerID: 123,
 					Limit:   10,
 					Offset:  1,
 				},
@@ -216,8 +222,34 @@ func TestVesselRepository_ListVessels(t *testing.T) {
 				err:        testutil.ErrDB,
 			},
 			mockFn: func(m *fixture.MockVesselRepository, req Request, res Response) {
-				additionalQuery := "WHERE name LIKE ? AND owner_id = ? LIMIT 10"
-				m.SQLMock.ExpectQuery(regexp.QuoteMeta(query + " " + additionalQuery)).
+				additionalQuery1 := "WHERE name LIKE ? AND owner_id = ? LIMIT 10"
+				m.SQLMock.ExpectQuery(regexp.QuoteMeta(query1 + " " + additionalQuery1)).
+					WillReturnError(testutil.ErrDB)
+			},
+		},
+		"db error second": {
+			request: Request{
+				ctx: context.Background(),
+				params: &param.ListVessels{
+					Name:    "name",
+					OwnerID: 123,
+					Limit:   10,
+					Offset:  1,
+				},
+			},
+			response: Response{
+				result:     nil,
+				pagination: nil,
+				err:        testutil.ErrDB,
+			},
+			mockFn: func(m *fixture.MockVesselRepository, req Request, res Response) {
+				additionalQuery1 := "WHERE name LIKE ? AND owner_id = ? LIMIT 10"
+				rows1 := m.SQLMock.NewRows(rowColumns)
+				rows1.AddRow(rowValues...)
+				m.SQLMock.ExpectQuery(regexp.QuoteMeta(query1 + " " + additionalQuery1)).WillReturnRows(rows1)
+
+				additionalQuery2 := "WHERE name LIKE ? AND owner_id = ?"
+				m.SQLMock.ExpectQuery(regexp.QuoteMeta(query2 + " " + additionalQuery2)).
 					WillReturnError(testutil.ErrDB)
 			},
 		},
@@ -237,7 +269,7 @@ func TestVesselRepository_ListVessels(t *testing.T) {
 
 func TestVesselRepository_GetVessel(t *testing.T) {
 	rowColumns := []string{"id", "owner_id", "name", "naccs_code", "created_at", "updated_at"}
-	rowValues := []driver.Value{"123", "456", "Some Name", "Some Code", testutil.CreatedAt, testutil.UpdatedAt}
+	rowValues := []driver.Value{123, 456, "Some Name", "Some Code", testutil.CreatedAt, testutil.UpdatedAt}
 	query := "SELECT `id`,`owner_id`,`name`,`naccs_code`,`created_at`,`updated_at` FROM `vessels`"
 
 	type Request struct {
@@ -259,12 +291,11 @@ func TestVesselRepository_GetVessel(t *testing.T) {
 			request: Request{
 				ctx: context.Background(),
 				params: &param.GetVessel{
-					ID:        "123",
-					NACCSCode: "Some Code",
+					ID: 123,
 				},
 			},
 			response: Response{
-				result: map[string]interface{}{"ID": "123"},
+				result: map[string]interface{}{"ID": 123},
 				err:    nil,
 			},
 			mockFn: func(m *fixture.MockVesselRepository, req Request, res Response) {
@@ -314,8 +345,8 @@ func TestVesselRepository_UpdateVessel(t *testing.T) {
 	}
 
 	vessel := &entity.Vessel{
-		ID:        "123",
-		OwnerID:   "456",
+		ID:        123,
+		OwnerID:   456,
 		Name:      "Some Name",
 		NACCSCode: "Some Code",
 	}
@@ -330,8 +361,8 @@ func TestVesselRepository_UpdateVessel(t *testing.T) {
 				ctx: context.Background(),
 				obj: vessel,
 				params: &param.UpdateVessel{
-					ID:        "123",
-					OwnerID:   "789",
+					ID:        123,
+					OwnerID:   789,
 					Name:      "New Name",
 					NACCSCode: "New Code",
 				},
@@ -343,7 +374,7 @@ func TestVesselRepository_UpdateVessel(t *testing.T) {
 			mockFn: func(m *fixture.MockVesselRepository, req Request, res Response) {
 				m.SQLMock.ExpectBegin()
 				m.SQLMock.ExpectExec(regexp.QuoteMeta(query)).
-					WithArgs("New Code", "New Name", "789", testutil.AnyTime{}, "123").
+					WithArgs("New Code", "New Name", 789, testutil.AnyTime{}, 123).
 					WillReturnResult(sqlmock.NewResult(123, 1))
 				m.SQLMock.ExpectCommit()
 			},

@@ -49,6 +49,7 @@ func (r *vesselRepository) LockVessel(ctx context.Context, eObj *entity.Vessel) 
 	err = r.database.Select(VesselColumns).
 		Where("id = ?", eObj.ID).
 		Clauses(clause.Locking{Strength: "UPDATE"}).Find(&eObj).Error
+
 	return util.ErrorWrap(err)
 }
 
@@ -74,12 +75,16 @@ func (r *vesselRepository) ListVessels(ctx context.Context, params *param.ListVe
 	vessels := []*entity.Vessel{}
 
 	query := r.database.Select(VesselColumns)
+	cquery := r.database.Model(&entity.Vessel{})
+
 	if params.Name != "" {
 		query.Where("name LIKE ?", "%"+params.Name+"%")
+		cquery.Where("name LIKE ?", "%"+params.Name+"%")
 	}
 
-	if params.OwnerID != "" {
+	if params.OwnerID != 0 {
 		query.Where("owner_id = ?", params.OwnerID)
+		cquery.Where("owner_id = ?", params.OwnerID)
 	}
 
 	err = query.Limit(params.Limit).Offset(params.Offset).Find(&vessels).Error
@@ -87,20 +92,19 @@ func (r *vesselRepository) ListVessels(ctx context.Context, params *param.ListVe
 		return nil, nil, util.ErrorWrap(err)
 	}
 
-	return vessels, util.NewOffsetPagination(params.Limit, params.Offset, len(vessels)), nil
+	var count int64
+	err = cquery.Count(&count).Error
+	if err != nil {
+		return nil, nil, util.ErrorWrap(err)
+	}
+
+	return vessels, util.NewOffsetPagination(params.Limit, params.Offset, int(count)), nil
 }
 
 func (r *vesselRepository) GetVessel(ctx context.Context, params *param.GetVessel) (result *entity.Vessel, err error) {
-	vessel := &entity.Vessel{}
+	vessel := &entity.Vessel{ID: params.ID}
 
 	query := r.database.Select(VesselColumns)
-	if params.ID != "" {
-		query.Where("id = ?", params.ID)
-	}
-
-	if params.NACCSCode != "" {
-		query.Where("naccs_code = ?", params.NACCSCode)
-	}
 	err = query.Find(&vessel).Error
 	if err != nil {
 		return nil, util.ErrorWrap(err)
@@ -113,7 +117,7 @@ func (r *vesselRepository) UpdateVessel(ctx context.Context, eObj *entity.Vessel
 	query := r.database.Model(&eObj)
 	updatedColumns := map[string]interface{}{}
 
-	if eObj.OwnerID != params.OwnerID && params.OwnerID != "" {
+	if eObj.OwnerID != params.OwnerID && params.OwnerID > 0 {
 		eObj.OwnerID = params.OwnerID
 		updatedColumns["owner_id"] = params.OwnerID
 	}

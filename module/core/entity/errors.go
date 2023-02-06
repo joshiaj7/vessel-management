@@ -7,6 +7,8 @@ import (
 )
 
 var (
+	ErrorParamType = NewError("Wrong param type", http.StatusUnprocessableEntity)
+
 	ErrorVoyageNotFound = NewError("Voyage is not found", http.StatusNotFound)
 
 	ErrorVesselNotFound   = NewError("Vessel is not found", http.StatusNotFound)
