@@ -13,6 +13,4 @@ var (
 
 	ErrDB      = errors.New("DB Error")
 	ErrStorage = errors.New("storage error")
-	ErrIo      = errors.New("io error")
-	ErrClient  = errors.New("client error")
 )

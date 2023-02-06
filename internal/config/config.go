@@ -20,7 +20,6 @@ type ServiceConfig struct {
 	AuthDomainEmployeeHost string `envconfig:"AUTH_DOMAIN_EMPLOYEE_HOST"`
 
 	DatabaseConfig DatabaseConfig `envconfig:"DB"`
-	// KafkaConfig    KafkaConfig    `envconfig:"KAFKA"`
 
 	Database *gorm.DB `ignored:"true"`
 }

@@ -28,6 +28,7 @@ func (h *VoyageHandler) Register(router *httprouter.Router) {
 	router.PUT("/v1/voyages/:id", h.UpdateVoyage)
 }
 
+// TODO: WIP
 func (h *VoyageHandler) CreateVoyage(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	result, err := h.usecase.CreateVoyage(r.Context(), &param.CreateVoyage{
 		VesselID:        r.URL.Query().Get("vessel_id"),
