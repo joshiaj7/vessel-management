@@ -71,15 +71,6 @@ func loadGatewayConfig() (GatewayConfig, error) {
 func loadCoreConfig() (coreConfig.CoreConfig, error) {
 	var cfg coreConfig.CoreConfig
 
-	// load from .env if exists
-	if _, err := os.Stat(".env"); err == nil {
-		if err := gotenv.Load(); err != nil {
-			return cfg, util.TracerFromError(err)
-		}
-	}
-
-	// parse environment variable to config struct using "service" namespace
-	// to prevent conflict with another modules
 	err := envconfig.Process("core", &cfg)
 	if err != nil {
 		return cfg, util.TracerFromError(err)

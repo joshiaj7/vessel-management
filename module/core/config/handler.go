@@ -8,7 +8,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func RegisterCoreHandler(usecase *CoreUsecase) {
+func RegisterCoreHandler(usecase *CoreUsecase) *httprouter.Router {
 
 	voyageHandler := handler.NewVoyageHandler(
 		usecase.Voyage,
@@ -22,7 +22,10 @@ func RegisterCoreHandler(usecase *CoreUsecase) {
 	voyageHandler.Register(router)
 	vesselHandler.Register(router)
 
+	// control
 	router.HandlerFunc("GET", "/healthz", healthz)
+
+	return router
 }
 
 func healthz(w http.ResponseWriter, _ *http.Request) {

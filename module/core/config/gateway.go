@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/julienschmidt/httprouter"
 	"gorm.io/gorm"
 )
 
@@ -9,11 +10,9 @@ type GatewayConfig struct {
 	Database *gorm.DB
 }
 
-func RegisterCoreGateway(cfg *GatewayConfig) error {
+func RegisterCoreGateway(cfg *GatewayConfig) *httprouter.Router {
 
 	repositories := RegisterCoreRepository(cfg)
 	usecases := RegisterCoreUsecase(repositories)
-	RegisterCoreHandler(usecases)
-
-	return nil
+	return RegisterCoreHandler(usecases)
 }

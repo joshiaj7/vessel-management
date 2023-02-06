@@ -1,13 +1,11 @@
 package config
 
 import (
-	"context"
 	"log"
-	"net/http"
-	"time"
 
 	"github.com/joshiaj7/vessel-management/internal/util"
 	coreConfig "github.com/joshiaj7/vessel-management/module/core/config"
+	"github.com/julienschmidt/httprouter"
 )
 
 type GatewayConfig struct {
@@ -15,37 +13,13 @@ type GatewayConfig struct {
 	ServiceConfig
 }
 
-type GatewayServer struct {
-	Server *http.Server
-	Host   string
-}
-
-func (gs *GatewayServer) Shutdown(ctx context.Context) error {
-	return util.ErrorWrap(gs.Server.Shutdown(ctx))
-}
-
-func (gs *GatewayServer) ListenAndServe() error {
-	return util.ErrorWrap(gs.Server.ListenAndServe())
-}
-
-func NewGatewayServer() (gateway *GatewayServer, err error) {
+func NewGatewayServer() (router *httprouter.Router, err error) {
 	cfg, err := initGatewayConfig()
 	if err != nil {
 		return nil, util.ErrorWrap(err)
 	}
 
-	registerGatewayCore(cfg)
-
-	server := &http.Server{
-		Addr:              cfg.GatewayHost,
-		Handler:           nil,
-		ReadHeaderTimeout: 30 * time.Second,
-	}
-
-	return &GatewayServer{
-		Server: server,
-		Host:   cfg.GatewayHost,
-	}, nil
+	return registerGatewayCore(cfg)
 }
 
 func initGatewayConfig() (cfg GatewayConfig, err error) {
@@ -65,14 +39,15 @@ func initGatewayConfig() (cfg GatewayConfig, err error) {
 	return cfg, nil
 }
 
-func registerGatewayCore(cfg GatewayConfig) {
+func registerGatewayCore(cfg GatewayConfig) (router *httprouter.Router, err error) {
 	coreCfg, err := loadCoreConfig()
 	if err != nil {
-		log.Fatalf("Register Gateway Core Failed: %v", err)
+		log.Fatalf("Load Core Config Failed: %v", err)
 	}
 
-	coreConfig.RegisterCoreGateway(&coreConfig.GatewayConfig{
+	router = coreConfig.RegisterCoreGateway(&coreConfig.GatewayConfig{
 		Config:   coreCfg,
 		Database: cfg.Database,
 	})
+	return router, nil
 }
