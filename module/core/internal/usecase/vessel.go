@@ -4,6 +4,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/joshiaj7/vessel-management/internal/util"
 	"github.com/joshiaj7/vessel-management/module/core/entity"
@@ -39,7 +40,9 @@ func NewVesselUsecase(
 func (u *vesselUsecase) CreateVessel(ctx context.Context, params *param.CreateVessel) (result *entity.Vessel, err error) {
 	result, err = u.repository.vessel.CreateVessel(ctx, params)
 	if err != nil {
-		return nil, util.ErrorWrap(err)
+		fmt.Println("USECASE")
+		fmt.Println(err)
+		return nil, err
 	}
 
 	return result, nil
@@ -48,7 +51,7 @@ func (u *vesselUsecase) CreateVessel(ctx context.Context, params *param.CreateVe
 func (u *vesselUsecase) ListVessels(ctx context.Context, params *param.ListVessels) (result []*entity.Vessel, pagination *util.OffsetPagination, err error) {
 	result, pagination, err = u.repository.vessel.ListVessels(ctx, params)
 	if err != nil {
-		return nil, nil, util.ErrorWrap(err)
+		return nil, nil, err
 	}
 
 	return result, pagination, nil
@@ -57,7 +60,7 @@ func (u *vesselUsecase) ListVessels(ctx context.Context, params *param.ListVesse
 func (u *vesselUsecase) GetVessel(ctx context.Context, params *param.GetVessel) (result *entity.Vessel, err error) {
 	result, err = u.repository.vessel.GetVessel(ctx, params)
 	if err != nil {
-		return nil, util.ErrorWrap(err)
+		return nil, err
 	}
 
 	return result, nil
@@ -67,12 +70,12 @@ func (u *vesselUsecase) UpdateVessel(ctx context.Context, params *param.UpdateVe
 	vessel := &entity.Vessel{ID: params.ID}
 	err = u.repository.vessel.LockVessel(ctx, vessel)
 	if err != nil {
-		return nil, util.ErrorWrap(err)
+		return nil, err
 	}
 
 	err = u.repository.vessel.UpdateVessel(ctx, vessel, params)
 	if err != nil {
-		return nil, util.ErrorWrap(err)
+		return nil, err
 	}
 
 	return vessel, nil

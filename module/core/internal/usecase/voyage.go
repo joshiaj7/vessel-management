@@ -42,7 +42,7 @@ func NewVoyageUsecase(
 func (u *voyageUsecase) CreateVoyage(ctx context.Context, params *param.CreateVoyage) (result *entity.Voyage, err error) {
 	result, err = u.repository.voyage.CreateVoyage(ctx, params)
 	if err != nil {
-		return nil, util.ErrorWrap(err)
+		return nil, err
 	}
 
 	return result, nil
@@ -51,7 +51,7 @@ func (u *voyageUsecase) CreateVoyage(ctx context.Context, params *param.CreateVo
 func (u *voyageUsecase) ListVoyages(ctx context.Context, params *param.ListVoyages) (result []*entity.Voyage, pagination *util.OffsetPagination, err error) {
 	result, pagination, err = u.repository.voyage.ListVoyages(ctx, params)
 	if err != nil {
-		return nil, nil, util.ErrorWrap(err)
+		return nil, nil, err
 	}
 
 	return result, pagination, nil
@@ -60,7 +60,7 @@ func (u *voyageUsecase) ListVoyages(ctx context.Context, params *param.ListVoyag
 func (u *voyageUsecase) GetVoyage(ctx context.Context, params *param.GetVoyage) (result *entity.Voyage, err error) {
 	result, err = u.repository.voyage.GetVoyage(ctx, params)
 	if err != nil {
-		return nil, util.ErrorWrap(err)
+		return nil, err
 	}
 
 	return result, nil
@@ -69,12 +69,12 @@ func (u *voyageUsecase) GetVoyage(ctx context.Context, params *param.GetVoyage) 
 func (u *voyageUsecase) UpdateVoyage(ctx context.Context, params *param.UpdateVoyage) (result *entity.Voyage, err error) {
 	voyage, err := u.repository.voyage.GetVoyage(ctx, &param.GetVoyage{ID: params.ID})
 	if err != nil {
-		return nil, util.ErrorWrap(err)
+		return nil, err
 	}
 
 	result, err = u.repository.voyage.UpdateVoyage(ctx, voyage)
 	if err != nil {
-		return nil, util.ErrorWrap(err)
+		return nil, err
 	}
 
 	return result, nil

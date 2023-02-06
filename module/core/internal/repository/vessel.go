@@ -50,7 +50,7 @@ func (r *vesselRepository) LockVessel(ctx context.Context, eObj *entity.Vessel) 
 		Where("id = ?", eObj.ID).
 		Clauses(clause.Locking{Strength: "UPDATE"}).Find(&eObj).Error
 
-	return util.ErrorWrap(err)
+	return err
 }
 
 func (r *vesselRepository) CreateVessel(ctx context.Context, params *param.CreateVessel) (result *entity.Vessel, err error) {
@@ -65,7 +65,7 @@ func (r *vesselRepository) CreateVessel(ctx context.Context, params *param.Creat
 
 	err = r.database.Select(VesselColumnsInsert).Create(vessel).Error
 	if err != nil {
-		return nil, util.ErrorWrap(err)
+		return nil, err
 	}
 
 	return vessel, nil
@@ -89,13 +89,13 @@ func (r *vesselRepository) ListVessels(ctx context.Context, params *param.ListVe
 
 	err = query.Limit(params.Limit).Offset(params.Offset).Find(&vessels).Error
 	if err != nil {
-		return nil, nil, util.ErrorWrap(err)
+		return nil, nil, err
 	}
 
 	var count int64
 	err = cquery.Count(&count).Error
 	if err != nil {
-		return nil, nil, util.ErrorWrap(err)
+		return nil, nil, err
 	}
 
 	return vessels, util.NewOffsetPagination(params.Limit, params.Offset, int(count)), nil
@@ -107,7 +107,7 @@ func (r *vesselRepository) GetVessel(ctx context.Context, params *param.GetVesse
 	query := r.database.Select(VesselColumns)
 	err = query.Find(&vessel).Error
 	if err != nil {
-		return nil, util.ErrorWrap(err)
+		return nil, err
 	}
 
 	return vessel, nil
@@ -138,5 +138,5 @@ func (r *vesselRepository) UpdateVessel(ctx context.Context, eObj *entity.Vessel
 
 	err = query.Updates(updatedColumns).Error
 
-	return util.ErrorWrap(err)
+	return err
 }

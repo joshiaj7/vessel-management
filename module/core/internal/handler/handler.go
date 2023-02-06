@@ -17,7 +17,7 @@ type SuccessResponse struct {
 func BuildErrorResponse(w http.ResponseWriter, err error) {
 	e, ok := err.(entity.RequestError)
 	if !ok {
-		WriteHTTPResponse(w, map[string]string{"message": e.Error()}, http.StatusInternalServerError)
+		WriteHTTPResponse(w, map[string]string{"message": err.Error()}, http.StatusInternalServerError)
 		return
 	}
 
